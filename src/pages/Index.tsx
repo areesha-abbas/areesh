@@ -4,8 +4,8 @@ import AboutSection from "@/components/sections/AboutSection";
 import SkillsSection from "@/components/sections/SkillsSection";
 import ProjectsSection from "@/components/sections/ProjectsSection";
 import ChatSection from "@/components/sections/ChatSection";
-import ReviewGeneratorSection from "@/components/sections/ReviewGeneratorSection";
 import ContactSection from "@/components/sections/ContactSection";
+import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import Footer from "@/components/Footer";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
@@ -32,8 +32,8 @@ const Index = () => {
           <SkillsSection />
           <ProjectsSection />
           <ChatSection />
-          <ReviewGeneratorSection />
           <ContactSection />
+          <TestimonialsSection />
         </main>
         <Footer />
       </div>

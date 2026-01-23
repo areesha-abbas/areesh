@@ -68,6 +68,54 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          approved_at: string | null
+          client_email: string | null
+          client_name: string
+          communication: string
+          created_at: string
+          delivery: string
+          generated_review: string
+          id: string
+          optional_comment: string | null
+          overall_experience: string
+          project_type: string
+          status: string
+          would_recommend: string
+        }
+        Insert: {
+          approved_at?: string | null
+          client_email?: string | null
+          client_name: string
+          communication: string
+          created_at?: string
+          delivery: string
+          generated_review: string
+          id?: string
+          optional_comment?: string | null
+          overall_experience: string
+          project_type: string
+          status?: string
+          would_recommend: string
+        }
+        Update: {
+          approved_at?: string | null
+          client_email?: string | null
+          client_name?: string
+          communication?: string
+          created_at?: string
+          delivery?: string
+          generated_review?: string
+          id?: string
+          optional_comment?: string | null
+          overall_experience?: string
+          project_type?: string
+          status?: string
+          would_recommend?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
