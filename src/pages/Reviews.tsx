@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Sparkles, Copy, Check, Loader2, Send } from "lucide-react";
+import { ArrowLeft, Sparkles, Copy, Check, Loader2, Send, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,14 +20,12 @@ const Reviews = () => {
   const [formData, setFormData] = useState({
     clientName: "",
     clientEmail: "",
-    overallExperience: "",
     projectType: "",
-    delivery: "",
-    communication: "",
     optionalComment: "",
-    wouldRecommend: "",
   });
 
+  const [rating, setRating] = useState(5);
+  const [hoveredRating, setHoveredRating] = useState(0);
   const [generatedReview, setGeneratedReview] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,16 +36,20 @@ const Reviews = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const getRatingLabel = (stars: number) => {
+    switch (stars) {
+      case 1: return "Poor";
+      case 2: return "Fair";
+      case 3: return "Good";
+      case 4: return "Very Good";
+      case 5: return "Excellent";
+      default: return "";
+    }
+  };
+
   const handleGenerate = async () => {
-    if (
-      !formData.clientName ||
-      !formData.overallExperience ||
-      !formData.projectType ||
-      !formData.delivery ||
-      !formData.communication ||
-      !formData.wouldRecommend
-    ) {
-      toast.error("Please fill in all required fields");
+    if (!formData.clientName || !formData.projectType || rating === 0) {
+      toast.error("Please fill in your name, project type, and rating");
       return;
     }
 
@@ -57,12 +59,12 @@ const Reviews = () => {
     try {
       const { data, error } = await supabase.functions.invoke("generate-review", {
         body: {
-          overallExperience: formData.overallExperience,
+          overallExperience: getRatingLabel(rating),
           projectType: formData.projectType,
-          delivery: formData.delivery,
-          communication: formData.communication,
+          delivery: rating >= 4 ? "On Time" : "Flexible",
+          communication: rating >= 4 ? "Excellent" : "Good",
           optionalComment: formData.optionalComment,
-          wouldRecommend: formData.wouldRecommend,
+          wouldRecommend: rating >= 3 ? "Yes" : "Maybe",
         },
       });
 
@@ -94,20 +96,20 @@ const Reviews = () => {
       const { error } = await supabase.from("reviews").insert({
         client_name: formData.clientName,
         client_email: formData.clientEmail || null,
-        overall_experience: formData.overallExperience,
+        overall_experience: getRatingLabel(rating),
         project_type: formData.projectType,
-        delivery: formData.delivery,
-        communication: formData.communication,
+        delivery: rating >= 4 ? "On Time" : "Flexible",
+        communication: rating >= 4 ? "Excellent" : "Good",
         optional_comment: formData.optionalComment || null,
-        would_recommend: formData.wouldRecommend,
+        would_recommend: rating >= 3 ? "Yes" : "Maybe",
         generated_review: generatedReview,
-        status: "pending",
+        rating: rating,
       });
 
       if (error) throw error;
 
       setSubmitted(true);
-      toast.success("Thank you! Your review has been submitted for approval.");
+      toast.success("Thank you! Your review has been published.");
     } catch (error) {
       console.error("Error submitting review:", error);
       toast.error("Failed to submit review. Please try again.");
@@ -136,7 +138,7 @@ const Reviews = () => {
           </div>
           <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
           <p className="text-muted-foreground mb-6">
-            Your review has been submitted and is pending approval. It will appear on the site once approved.
+            Your review has been published and is now visible on the site.
           </p>
           <Link to="/">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -176,7 +178,7 @@ const Reviews = () => {
             Leave a <span className="text-gradient">Review</span>
           </h1>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            Share your experience working with me. Fill out the form and let AI craft a polished testimonial for you.
+            Share your experience working with me. Rate your experience and let AI craft a polished testimonial for you.
           </p>
           <div className="w-20 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full mt-4" />
         </motion.div>
@@ -188,6 +190,38 @@ const Reviews = () => {
           className="glass-card p-8 glow-border"
         >
           <div className="space-y-6">
+            {/* Star Rating */}
+            <div className="space-y-3">
+              <Label className="text-foreground text-lg font-medium">
+                Your Rating *
+              </Label>
+              <div className="flex flex-col items-center gap-3 p-6 bg-secondary/30 rounded-xl border border-glass-border">
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoveredRating(star)}
+                      onMouseLeave={() => setHoveredRating(0)}
+                      className="transition-transform hover:scale-110 focus:outline-none"
+                    >
+                      <Star
+                        className={`w-10 h-10 transition-colors ${
+                          star <= (hoveredRating || rating)
+                            ? "fill-primary text-primary"
+                            : "text-muted-foreground/30"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <p className="text-sm font-medium text-foreground">
+                  {getRatingLabel(hoveredRating || rating)}
+                </p>
+              </div>
+            </div>
+
             {/* Client Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -221,104 +255,25 @@ const Reviews = () => {
               </div>
             </div>
 
-            {/* Review Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="experience" className="text-foreground">
-                  Overall Experience *
-                </Label>
-                <Select
-                  value={formData.overallExperience}
-                  onValueChange={(value) => handleSelectChange("overallExperience", value)}
-                >
-                  <SelectTrigger id="experience" className="bg-secondary border-glass-border">
-                    <SelectValue placeholder="Select experience" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-glass-border z-50">
-                    <SelectItem value="Excellent">Excellent</SelectItem>
-                    <SelectItem value="Good">Good</SelectItem>
-                    <SelectItem value="Average">Average</SelectItem>
-                    <SelectItem value="Poor">Poor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="projectType" className="text-foreground">
-                  Project Type *
-                </Label>
-                <Select
-                  value={formData.projectType}
-                  onValueChange={(value) => handleSelectChange("projectType", value)}
-                >
-                  <SelectTrigger id="projectType" className="bg-secondary border-glass-border">
-                    <SelectValue placeholder="Select project type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-glass-border z-50">
-                    <SelectItem value="Website Development">Website Development</SelectItem>
-                    <SelectItem value="AI Automation">AI Automation</SelectItem>
-                    <SelectItem value="Portfolio Site">Portfolio Site</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="delivery" className="text-foreground">
-                  Delivery *
-                </Label>
-                <Select
-                  value={formData.delivery}
-                  onValueChange={(value) => handleSelectChange("delivery", value)}
-                >
-                  <SelectTrigger id="delivery" className="bg-secondary border-glass-border">
-                    <SelectValue placeholder="Select delivery speed" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-glass-border z-50">
-                    <SelectItem value="Very Fast">Very Fast</SelectItem>
-                    <SelectItem value="On Time">On Time</SelectItem>
-                    <SelectItem value="Delayed">Delayed</SelectItem>
-                    <SelectItem value="Flexible">Flexible</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="communication" className="text-foreground">
-                  Communication *
-                </Label>
-                <Select
-                  value={formData.communication}
-                  onValueChange={(value) => handleSelectChange("communication", value)}
-                >
-                  <SelectTrigger id="communication" className="bg-secondary border-glass-border">
-                    <SelectValue placeholder="Select communication quality" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-glass-border z-50">
-                    <SelectItem value="Excellent">Excellent</SelectItem>
-                    <SelectItem value="Good">Good</SelectItem>
-                    <SelectItem value="Average">Average</SelectItem>
-                    <SelectItem value="Poor">Poor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
+            {/* Project Type */}
             <div className="space-y-2">
-              <Label htmlFor="recommend" className="text-foreground">
-                Would you recommend? *
+              <Label htmlFor="projectType" className="text-foreground">
+                Project Type *
               </Label>
               <Select
-                value={formData.wouldRecommend}
-                onValueChange={(value) => handleSelectChange("wouldRecommend", value)}
+                value={formData.projectType}
+                onValueChange={(value) => handleSelectChange("projectType", value)}
               >
-                <SelectTrigger id="recommend" className="bg-secondary border-glass-border">
-                  <SelectValue placeholder="Select recommendation" />
+                <SelectTrigger id="projectType" className="bg-secondary border-glass-border">
+                  <SelectValue placeholder="Select project type" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-glass-border z-50">
-                  <SelectItem value="Yes">Yes</SelectItem>
-                  <SelectItem value="Maybe">Maybe</SelectItem>
-                  <SelectItem value="No">No</SelectItem>
+                  <SelectItem value="Website Development">Website Development</SelectItem>
+                  <SelectItem value="AI Automation">AI Automation</SelectItem>
+                  <SelectItem value="Portfolio Site">Portfolio Site</SelectItem>
+                  <SelectItem value="E-commerce">E-commerce</SelectItem>
+                  <SelectItem value="Landing Page">Landing Page</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -365,6 +320,18 @@ const Reviews = () => {
                 className="mt-6 space-y-4"
               >
                 <div className="p-6 bg-secondary/50 border border-glass-border rounded-xl relative">
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-5 h-5 ${
+                          star <= rating
+                            ? "fill-primary text-primary"
+                            : "text-muted-foreground/30"
+                        }`}
+                      />
+                    ))}
+                  </div>
                   <div className="flex items-start justify-between gap-4">
                     <p className="text-foreground italic leading-relaxed flex-1">
                       "{generatedReview}"
@@ -382,6 +349,7 @@ const Reviews = () => {
                       )}
                     </Button>
                   </div>
+                  <p className="mt-3 text-sm text-muted-foreground">— {formData.clientName}</p>
                 </div>
 
                 <Button
@@ -392,12 +360,12 @@ const Reviews = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Submitting...
+                      Publishing...
                     </>
                   ) : (
                     <>
                       <Send className="w-5 h-5 mr-2" />
-                      Submit Review for Approval
+                      Publish Review
                     </>
                   )}
                 </Button>
