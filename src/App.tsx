@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import AdminAuth from "./pages/AdminAuth";
 import AdminDashboard from "./pages/AdminDashboard";
 import TrackOrder from "./pages/TrackOrder";
+import Reviews from "./pages/Reviews";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/reviews" element={<Reviews />} />
           <Route path="/track-status" element={<TrackOrder />} />
           <Route path="/admin/login" element={<AdminAuth />} />
           <Route path="/admin" element={<AdminDashboard />} />
