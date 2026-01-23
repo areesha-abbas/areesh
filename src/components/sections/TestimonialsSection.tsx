@@ -20,6 +20,7 @@ const TestimonialsSection = () => {
 
   useEffect(() => {
     const fetchReviews = async () => {
+      console.log("Fetching reviews...");
       try {
         const { data, error } = await supabase
           .from("reviews")
@@ -27,6 +28,9 @@ const TestimonialsSection = () => {
           .order("created_at", { ascending: false })
           .limit(6);
 
+        console.log("Reviews data:", data);
+        console.log("Reviews error:", error);
+        
         if (error) throw error;
         setReviews(data || []);
       } catch (error) {
