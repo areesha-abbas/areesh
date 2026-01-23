@@ -41,14 +41,25 @@ Guidelines:
 - Optional Comment: ${optionalComment || "None provided"}
 - Would Recommend: ${wouldRecommend}`;
 
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) {
+      console.error("LOVABLE_API_KEY is not configured");
+      return new Response(
+        JSON.stringify({ error: "API key not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Calling AI Gateway with model: google/gemini-2.5-flash");
+    
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -58,17 +69,38 @@ Guidelines:
       }),
     });
 
+    const responseText = await response.text();
+    console.log("AI Gateway response status:", response.status);
+    console.log("AI Gateway response:", responseText);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI Gateway error:", errorText);
+      console.error("AI Gateway error:", responseText);
       return new Response(
         JSON.stringify({ error: "Failed to generate review" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const data = await response.json();
-    const generatedReview = data.choices[0]?.message?.content || "";
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse AI response:", e);
+      return new Response(
+        JSON.stringify({ error: "Invalid AI response format" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error("Unexpected AI response structure:", JSON.stringify(data));
+      return new Response(
+        JSON.stringify({ error: "Unexpected AI response structure" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const generatedReview = data.choices[0].message.content || "";
 
     return new Response(
       JSON.stringify({ review: generatedReview.trim() }),
