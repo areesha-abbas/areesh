@@ -6,7 +6,6 @@ import {
   Package,
   Clock,
   CheckCircle,
-  XCircle,
   Trash2,
   Edit,
   Save,
@@ -67,8 +66,12 @@ interface Review {
   id: string;
   client_name: string;
   client_email: string | null;
+  overall_experience: string;
   project_type: string;
+  delivery: string;
+  communication: string;
   optional_comment: string | null;
+  would_recommend: string;
   generated_review: string;
   rating: number;
   created_at: string;
@@ -81,7 +84,6 @@ const statusOptions = [
   { value: "completed", label: "Completed", color: "bg-green-500/10 text-green-500 border-green-500/20" },
   { value: "cancelled", label: "Cancelled", color: "bg-red-500/10 text-red-500 border-red-500/20" },
 ];
-
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -196,7 +198,6 @@ const AdminDashboard = () => {
     }
   };
 
-
   const saveNotes = async (orderId: string) => {
     setSavingId(orderId);
     try {
@@ -281,7 +282,6 @@ const AdminDashboard = () => {
     );
   };
 
-
   const getGoalText = (order: Order) => {
     if (order.website_goal === "other" && order.website_goal_other) {
       return order.website_goal_other;
@@ -357,8 +357,8 @@ const AdminDashboard = () => {
             className="glass-card rounded-xl p-4"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-yellow-500/10">
-                <Clock className="w-5 h-5 text-yellow-500" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <Clock className="w-5 h-5 text-accent" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{stats.pendingOrders}</p>
@@ -373,8 +373,8 @@ const AdminDashboard = () => {
             className="glass-card rounded-xl p-4"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-accent/10">
-                <MessageSquare className="w-5 h-5 text-accent" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <MessageSquare className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{stats.totalReviews}</p>
@@ -594,7 +594,7 @@ const AdminDashboard = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="w-full text-red-500 border-red-500/20 hover:bg-red-500/10"
+                                className="w-full text-destructive border-destructive/20 hover:bg-destructive/10"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Delete Order
@@ -612,7 +612,7 @@ const AdminDashboard = () => {
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => deleteOrder(order.id)}
-                                  className="bg-red-500 hover:bg-red-600"
+                                  className="bg-destructive hover:bg-destructive/90"
                                 >
                                   Delete
                                 </AlertDialogAction>
@@ -661,7 +661,7 @@ const AdminDashboard = () => {
                                 <h3 className="text-lg font-semibold text-foreground">
                                   {review.client_name}
                                 </h3>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-0.5">
                                   {Array.from({ length: 5 }).map((_, i) => (
                                     <Star
                                       key={i}
@@ -686,9 +686,23 @@ const AdminDashboard = () => {
                             </div>
                           </div>
 
-                          <div className="bg-secondary/30 rounded-lg p-2 text-center inline-block">
-                            <p className="text-xs text-muted-foreground">Project</p>
-                            <p className="text-sm font-medium text-foreground">{review.project_type}</p>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="bg-secondary/30 rounded-lg p-2 text-center">
+                              <p className="text-xs text-muted-foreground">Experience</p>
+                              <p className="text-sm font-medium text-foreground">{review.overall_experience}</p>
+                            </div>
+                            <div className="bg-secondary/30 rounded-lg p-2 text-center">
+                              <p className="text-xs text-muted-foreground">Project</p>
+                              <p className="text-sm font-medium text-foreground">{review.project_type}</p>
+                            </div>
+                            <div className="bg-secondary/30 rounded-lg p-2 text-center">
+                              <p className="text-xs text-muted-foreground">Delivery</p>
+                              <p className="text-sm font-medium text-foreground">{review.delivery}</p>
+                            </div>
+                            <div className="bg-secondary/30 rounded-lg p-2 text-center">
+                              <p className="text-xs text-muted-foreground">Recommend</p>
+                              <p className="text-sm font-medium text-foreground">{review.would_recommend}</p>
+                            </div>
                           </div>
 
                           <div className="bg-secondary/30 rounded-lg p-4">
@@ -714,15 +728,14 @@ const AdminDashboard = () => {
                           )}
                         </div>
 
-                        {/* Actions */}
-                        <div className="lg:w-48 space-y-3">
-
+                        {/* Delete Action */}
+                        <div className="lg:w-36">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="w-full text-red-500 border-red-500/20 hover:bg-red-500/10"
+                                className="w-full text-destructive border-destructive/20 hover:bg-destructive/10"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Delete
@@ -740,7 +753,7 @@ const AdminDashboard = () => {
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => deleteReview(review.id)}
-                                  className="bg-red-500 hover:bg-red-600"
+                                  className="bg-destructive hover:bg-destructive/90"
                                 >
                                   Delete
                                 </AlertDialogAction>

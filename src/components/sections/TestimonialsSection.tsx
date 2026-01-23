@@ -80,11 +80,12 @@ const TestimonialsSection = () => {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="glass-card p-6 rounded-xl hover-glow transition-all duration-300"
             >
+              {/* Star Rating */}
               <div className="flex items-center gap-1 mb-4">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-4 h-4 ${
+                    className={`w-5 h-5 ${
                       i < review.rating
                         ? "fill-primary text-primary"
                         : "text-muted-foreground/30"
@@ -95,10 +96,12 @@ const TestimonialsSection = () => {
 
               <Quote className="w-8 h-8 text-primary/30 mb-3" />
 
+              {/* Review Text */}
               <p className="text-foreground/90 text-sm leading-relaxed mb-4 line-clamp-4">
                 {review.generated_review}
               </p>
 
+              {/* Client Info */}
               <div className="pt-4 border-t border-glass-border">
                 <p className="font-semibold text-foreground">{review.client_name}</p>
                 <p className="text-xs text-muted-foreground">{review.project_type}</p>
