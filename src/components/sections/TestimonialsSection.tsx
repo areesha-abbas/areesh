@@ -8,7 +8,7 @@ interface Review {
   client_name: string;
   project_type: string;
   generated_review: string;
-  overall_experience: string;
+  rating: number;
   created_at: string;
 }
 
@@ -23,9 +23,8 @@ const TestimonialsSection = () => {
       try {
         const { data, error } = await supabase
           .from("reviews")
-          .select("id, client_name, project_type, generated_review, overall_experience, created_at")
-          .eq("status", "approved")
-          .order("approved_at", { ascending: false })
+          .select("id, client_name, project_type, generated_review, rating, created_at")
+          .order("created_at", { ascending: false })
           .limit(6);
 
         if (error) throw error;
@@ -40,19 +39,6 @@ const TestimonialsSection = () => {
     fetchReviews();
   }, []);
 
-  const getStarCount = (experience: string) => {
-    switch (experience) {
-      case "Excellent":
-        return 5;
-      case "Good":
-        return 4;
-      case "Average":
-        return 3;
-      default:
-        return 2;
-    }
-  };
-
   if (isLoading) {
     return (
       <section id="testimonials" className="py-20 px-4">
@@ -64,7 +50,7 @@ const TestimonialsSection = () => {
   }
 
   if (reviews.length === 0) {
-    return null; // Don't render section if no approved reviews
+    return null;
   }
 
   return (
@@ -95,11 +81,15 @@ const TestimonialsSection = () => {
               className="glass-card p-6 rounded-xl hover-glow transition-all duration-300"
             >
               <div className="flex items-center gap-1 mb-4">
-                {Array.from({ length: getStarCount(review.overall_experience) }).map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-primary text-primary" />
-                ))}
-                {Array.from({ length: 5 - getStarCount(review.overall_experience) }).map((_, i) => (
-                  <Star key={i} className="w-4 h-4 text-muted-foreground/30" />
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${
+                      i < review.rating
+                        ? "fill-primary text-primary"
+                        : "text-muted-foreground/30"
+                    }`}
+                  />
                 ))}
               </div>
 

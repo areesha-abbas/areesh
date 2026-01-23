@@ -19,8 +19,6 @@ import {
   RefreshCw,
   MessageSquare,
   Star,
-  ThumbsUp,
-  ThumbsDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,16 +67,11 @@ interface Review {
   id: string;
   client_name: string;
   client_email: string | null;
-  overall_experience: string;
   project_type: string;
-  delivery: string;
-  communication: string;
   optional_comment: string | null;
-  would_recommend: string;
   generated_review: string;
-  status: string;
+  rating: number;
   created_at: string;
-  approved_at: string | null;
 }
 
 const statusOptions = [
@@ -89,11 +82,6 @@ const statusOptions = [
   { value: "cancelled", label: "Cancelled", color: "bg-red-500/10 text-red-500 border-red-500/20" },
 ];
 
-const reviewStatusOptions = [
-  { value: "pending", label: "Pending", color: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" },
-  { value: "approved", label: "Approved", color: "bg-green-500/10 text-green-500 border-green-500/20" },
-  { value: "rejected", label: "Rejected", color: "bg-red-500/10 text-red-500 border-red-500/20" },
-];
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -208,41 +196,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const updateReviewStatus = async (reviewId: string, status: string) => {
-    setSavingId(reviewId);
-    try {
-      const updateData: any = { status };
-      if (status === "approved") {
-        updateData.approved_at = new Date().toISOString();
-      }
-
-      const { error } = await supabase
-        .from("reviews")
-        .update(updateData)
-        .eq("id", reviewId);
-
-      if (error) throw error;
-
-      setReviews((prev) =>
-        prev.map((review) =>
-          review.id === reviewId ? { ...review, status, approved_at: updateData.approved_at || review.approved_at } : review
-        )
-      );
-
-      toast({
-        title: "Review updated",
-        description: `Review ${status}`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Update failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setSavingId(null);
-    }
-  };
 
   const saveNotes = async (orderId: string) => {
     setSavingId(orderId);
@@ -328,14 +281,6 @@ const AdminDashboard = () => {
     );
   };
 
-  const getReviewStatusBadge = (status: string) => {
-    const option = reviewStatusOptions.find((o) => o.value === status) || reviewStatusOptions[0];
-    return (
-      <Badge variant="outline" className={option.color}>
-        {option.label}
-      </Badge>
-    );
-  };
 
   const getGoalText = (order: Order) => {
     if (order.website_goal === "other" && order.website_goal_other) {
@@ -355,8 +300,6 @@ const AdminDashboard = () => {
     inProgressOrders: orders.filter((o) => o.status === "in-progress").length,
     completedOrders: orders.filter((o) => o.status === "completed").length,
     totalReviews: reviews.length,
-    pendingReviews: reviews.filter((r) => r.status === "pending").length,
-    approvedReviews: reviews.filter((r) => r.status === "approved").length,
   };
 
   return (
@@ -430,12 +373,12 @@ const AdminDashboard = () => {
             className="glass-card rounded-xl p-4"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/10">
-                <MessageSquare className="w-5 h-5 text-purple-500" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <MessageSquare className="w-5 h-5 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{stats.pendingReviews}</p>
-                <p className="text-xs text-muted-foreground">Pending Reviews</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalReviews}</p>
+                <p className="text-xs text-muted-foreground">Total Reviews</p>
               </div>
             </div>
           </motion.div>
@@ -446,12 +389,12 @@ const AdminDashboard = () => {
             className="glass-card rounded-xl p-4"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500/10">
-                <CheckCircle className="w-5 h-5 text-green-500" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <CheckCircle className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{stats.approvedReviews}</p>
-                <p className="text-xs text-muted-foreground">Approved Reviews</p>
+                <p className="text-2xl font-bold text-foreground">{stats.completedOrders}</p>
+                <p className="text-xs text-muted-foreground">Completed Orders</p>
               </div>
             </div>
           </motion.div>
@@ -718,7 +661,18 @@ const AdminDashboard = () => {
                                 <h3 className="text-lg font-semibold text-foreground">
                                   {review.client_name}
                                 </h3>
-                                {getReviewStatusBadge(review.status)}
+                                <div className="flex items-center gap-1">
+                                  {Array.from({ length: 5 }).map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`w-4 h-4 ${
+                                        i < review.rating
+                                          ? "fill-primary text-primary"
+                                          : "text-muted-foreground/30"
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
                               </div>
                               <p className="text-sm text-muted-foreground">
                                 {new Date(review.created_at).toLocaleDateString("en-US", {
@@ -732,23 +686,9 @@ const AdminDashboard = () => {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div className="bg-secondary/30 rounded-lg p-2 text-center">
-                              <p className="text-xs text-muted-foreground">Experience</p>
-                              <p className="text-sm font-medium text-foreground">{review.overall_experience}</p>
-                            </div>
-                            <div className="bg-secondary/30 rounded-lg p-2 text-center">
-                              <p className="text-xs text-muted-foreground">Project</p>
-                              <p className="text-sm font-medium text-foreground">{review.project_type}</p>
-                            </div>
-                            <div className="bg-secondary/30 rounded-lg p-2 text-center">
-                              <p className="text-xs text-muted-foreground">Delivery</p>
-                              <p className="text-sm font-medium text-foreground">{review.delivery}</p>
-                            </div>
-                            <div className="bg-secondary/30 rounded-lg p-2 text-center">
-                              <p className="text-xs text-muted-foreground">Recommend</p>
-                              <p className="text-sm font-medium text-foreground">{review.would_recommend}</p>
-                            </div>
+                          <div className="bg-secondary/30 rounded-lg p-2 text-center inline-block">
+                            <p className="text-xs text-muted-foreground">Project</p>
+                            <p className="text-sm font-medium text-foreground">{review.project_type}</p>
                           </div>
 
                           <div className="bg-secondary/30 rounded-lg p-4">
@@ -776,46 +716,6 @@ const AdminDashboard = () => {
 
                         {/* Actions */}
                         <div className="lg:w-48 space-y-3">
-                          {review.status === "pending" && (
-                            <>
-                              <Button
-                                onClick={() => updateReviewStatus(review.id, "approved")}
-                                disabled={savingId === review.id}
-                                className="w-full bg-green-600 hover:bg-green-700 text-white"
-                              >
-                                <ThumbsUp className="w-4 h-4 mr-2" />
-                                Approve
-                              </Button>
-                              <Button
-                                onClick={() => updateReviewStatus(review.id, "rejected")}
-                                disabled={savingId === review.id}
-                                variant="outline"
-                                className="w-full text-red-500 border-red-500/20 hover:bg-red-500/10"
-                              >
-                                <ThumbsDown className="w-4 h-4 mr-2" />
-                                Reject
-                              </Button>
-                            </>
-                          )}
-
-                          {review.status !== "pending" && (
-                            <Select
-                              value={review.status}
-                              onValueChange={(value) => updateReviewStatus(review.id, value)}
-                              disabled={savingId === review.id}
-                            >
-                              <SelectTrigger className="bg-secondary/30 border-glass-border">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="bg-card border-glass-border z-50">
-                                {reviewStatusOptions.map((option) => (
-                                  <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
 
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

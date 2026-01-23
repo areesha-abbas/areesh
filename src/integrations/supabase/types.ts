@@ -81,6 +81,7 @@ export type Database = {
           optional_comment: string | null
           overall_experience: string
           project_type: string
+          rating: number
           status: string
           would_recommend: string
         }
@@ -96,6 +97,7 @@ export type Database = {
           optional_comment?: string | null
           overall_experience: string
           project_type: string
+          rating?: number
           status?: string
           would_recommend: string
         }
@@ -111,6 +113,7 @@ export type Database = {
           optional_comment?: string | null
           overall_experience?: string
           project_type?: string
+          rating?: number
           status?: string
           would_recommend?: string
         }
