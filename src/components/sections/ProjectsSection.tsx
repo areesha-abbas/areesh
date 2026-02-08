@@ -100,7 +100,7 @@ const projects = [
   ]
   }, 
   { 
-  id: 5,
+  id: 6,
   name: "LunaLift AI Fitness Coach",
   description: "AI-powered personalized workout & wellness assistant",
   icon: ShoppingCart,
