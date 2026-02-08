@@ -63,7 +63,7 @@ const FALLBACK_REVIEWS: Review[] = [
 const TestimonialsSection = () => {
   const ref = useRef(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, amount: 0.1 });
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -109,7 +109,7 @@ const TestimonialsSection = () => {
       <div className="max-w-7xl mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
@@ -139,7 +139,7 @@ const TestimonialsSection = () => {
           <motion.div
             key={review.id}
             initial={{ opacity: 0, x: 60 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
             className="glass-card p-6 rounded-xl hover-glow transition-all duration-300 shrink-0 w-[320px] md:w-[380px] snap-start"
           >
