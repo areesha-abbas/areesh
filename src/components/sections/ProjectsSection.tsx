@@ -38,7 +38,7 @@ const projects = [
     name: "Social Intelligence Suite",
     description: "AI-driven content optimization and scheduled workflows",
     icon: PenTool,
-    color: "from-purple-500 to-pink-600",
+    color: "from-teal-300 to-cyan-500",
     link: "https://ai-social-media-scheduler.vercel.app/",
     details:
       "An advanced content tool that leverages LLM integration to transform niche descriptions into high-engagement captions. Built with a scheduled reminder architecture to ensure consistent content delivery.",
@@ -81,6 +81,42 @@ const projects = [
       "Tailwind CSS"
     ]
   }
+  ,
+  {
+  id: 5,
+  name: "AI Booking & Service Assistant",
+  description: "AI-powered assistant for local service businesses",
+  icon: ShoppingCart,
+  color: "from-red-400 to-yellow-500",
+  link: "https://ask-glow-book.vercel.app/",
+  details:
+    "An AI-driven assistant designed for salons and fitness studios to automate customer interactions. It intelligently answers FAQs, recommends services based on user needs, and collects appointment requests without human involvement.",
+  technologies: [
+    "React",
+    "AI Chatbot Logic",
+    "Form Automation",
+    "Email Follow-up Automation",
+    "Tailwind CSS"
+  ]
+  }, 
+  { 
+  id: 5,
+  name: "LunaLift AI Fitness Coach",
+  description: "AI-powered personalized workout & wellness assistant",
+  icon: ShoppingCart,
+  color: "from-violet-500 to-fuchsia-600",
+  link: "https://lunalift-jeoc.vercel.app/",
+  details:
+    "LunaLift is an AI-powered fitness and wellness coach designed specifically for women. It personalizes daily workouts based on energy levels, recovery needs, and user goals. The assistant guides users through warm-ups, strength training, and recovery while adapting plans dynamically to support consistency, confidence, and long-term health.",
+  technologies: [
+    "React",
+    "AI Workout Personalization",
+    "Energy-Based Training Logic",
+    "Adaptive Program Generation",
+    "Tailwind CSS"
+  ]
+}
+
 ];
 
 const ProjectsSection = () => {
