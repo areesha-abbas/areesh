@@ -115,6 +115,23 @@ const projects = [
     "Adaptive Program Generation",
     "Tailwind CSS"
   ]
+}, 
+  { 
+  id: 7,
+  name: "AI Waiter Assistant",
+  description: "AI-powered restaurant ordering & recommendation assistant",
+  icon: ShoppingCart,
+  color: "from-orange-500 to-red-600",
+  link: "https://ai-waiter-assistant.vercel.app/",
+  details:
+    "AI Waiter Assistant is a smart restaurant automation demo where an AI acts as a digital waiter. It helps customers choose meals based on preferences, answers menu-related questions, and collects orders or table reservation requests — reducing staff workload while improving customer experience.",
+  technologies: [
+    "React",
+    "AI Conversational Logic",
+    "Menu Recommendation System",
+    "Order & Reservation Automation",
+    "Tailwind CSS"
+  ]
 }
 
 ];
